@@ -1,0 +1,399 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>승패 카운터</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0;
+        }
+
+        .container {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            gap: 60px;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .counter-group {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .counter-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 10px;
+        }
+
+        .label {
+            font-size: 24px;
+            width: 50px;
+            color: #555;
+        }
+
+        .display-box {
+            width: 80px;
+            height: 50px;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            background-color: white;
+            color: #333;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            width: 45px;
+            height: 45px;
+            border: 2px solid #333;
+            background-color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #333;
+        }
+
+        .btn:hover {
+            background-color: #333;
+            color: white;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .reset-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .reset-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .reset-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .winrate-row {
+            display: flex;
+            align-items: center;
+            margin-top: 10px;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .winrate-label {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .winrate-box {
+            width: 90px;
+            height: 44px;
+            border: 2px solid #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            background-color: #f9f9f9;
+            color: #1a6fd4;
+        }
+
+        .combined-section {
+            margin-top: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .combined-label {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .combined-box {
+            width: 100px;
+            height: 48px;
+            border: 2px solid #1a6fd4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            background-color: #eef4ff;
+            color: #1a6fd4;
+        }
+    </style>
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="OX 카운터">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#7c3aed">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <script>
+    if('serviceWorker' in navigator){
+      window.addEventListener('load',()=>{
+        navigator.serviceWorker.register('./service-worker.js');
+      });
+    }
+    window.addEventListener('beforeinstallprompt',e=>{
+      e.preventDefault();
+      window._pwaE=e;
+      var b=document.createElement('div');
+      b.style='position:fixed;bottom:0;left:0;right:0;background:#7c3aed;color:#fff;padding:18px;text-align:center;z-index:9999;font-size:15px;font-weight:bold;cursor:pointer;font-family:sans-serif;';
+      b.innerHTML='📲 홈화면에 앱 추가하기 · Add to Home Screen';
+      b.onclick=async function(){window._pwaE.prompt();var r=await window._pwaE.userChoice;if(r.outcome==='accepted')b.remove();};
+      document.body.appendChild(b);
+    });
+  </script>
+</head>
+<body>
+    <div class="wrapper">
+    <div class="container">
+        <!-- In Section -->
+        <div class="section">
+            <div class="section-title">In</div>
+
+            <div class="counter-group">
+                <div class="counter-row">
+                    <span class="label">승 :</span>
+                    <div class="display-box" id="in-win">0</div>
+                </div>
+                <div class="counter-row">
+                    <span class="label">패 :</span>
+                    <div class="display-box" id="in-lose">0</div>
+                </div>
+            </div>
+
+            <div class="counter-group">
+                <div class="counter-row">
+                    <span class="label">승</span>
+                    <div class="button-group">
+                        <button class="btn" onclick="updateCounter('in-win', 1)">+</button>
+                        <button class="btn" onclick="updateCounter('in-win', -1)">−</button>
+                    </div>
+                </div>
+                <div class="counter-row">
+                    <span class="label">패</span>
+                    <div class="button-group">
+                        <button class="btn" onclick="updateCounter('in-lose', 1)">+</button>
+                        <button class="btn" onclick="updateCounter('in-lose', -1)">−</button>
+                    </div>
+                </div>
+            </div>
+            <div class="winrate-row">
+                <span class="winrate-label">승률 :</span>
+                <div class="winrate-box" id="in-rate">-</div>
+            </div>
+        </div>
+
+        <!-- Out Section -->
+        <div class="section">
+            <div class="section-title">out</div>
+
+            <div class="counter-group">
+                <div class="counter-row">
+                    <span class="label">승 :</span>
+                    <div class="display-box" id="out-win">0</div>
+                </div>
+                <div class="counter-row">
+                    <span class="label">패 :</span>
+                    <div class="display-box" id="out-lose">0</div>
+                </div>
+            </div>
+
+            <div class="counter-group">
+                <div class="counter-row">
+                    <span class="label">승</span>
+                    <div class="button-group">
+                        <button class="btn" onclick="updateCounter('out-win', 1)">+</button>
+                        <button class="btn" onclick="updateCounter('out-win', -1)">−</button>
+                    </div>
+                </div>
+                <div class="counter-row">
+                    <span class="label">패</span>
+                    <div class="button-group">
+                        <button class="btn" onclick="updateCounter('out-lose', 1)">+</button>
+                        <button class="btn" onclick="updateCounter('out-lose', -1)">−</button>
+                    </div>
+                </div>
+            </div>
+            <div class="winrate-row">
+                <span class="winrate-label">승률 :</span>
+                <div class="winrate-box" id="out-rate">-</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 합산 승률 -->
+    <div class="combined-section" style="margin-top:20px;">
+        <span class="combined-label">합산 승률 :</span>
+        <div class="combined-box" id="combined-rate">-</div>
+    </div>
+
+    <!-- Reset Button -->
+    <div style="margin-top:24px; margin-bottom:10px;">
+        <button class="reset-btn" onclick="resetAllCounters()">전체 초기화</button>
+    </div>
+    </div><!-- /wrapper -->
+
+    <script>
+        // 페이지 로드 시 저장된 값 불러오기
+        window.onload = function() {
+            loadCounters();
+        };
+
+        // 승률 계산 및 표시
+        function updateWinRates() {
+            const inWin   = parseInt(document.getElementById('in-win').textContent)   || 0;
+            const inLose  = parseInt(document.getElementById('in-lose').textContent)  || 0;
+            const outWin  = parseInt(document.getElementById('out-win').textContent)  || 0;
+            const outLose = parseInt(document.getElementById('out-lose').textContent) || 0;
+
+            const inTotal  = inWin  + inLose;
+            const outTotal = outWin + outLose;
+            const allTotal = inTotal + outTotal;
+
+            const inRateEl       = document.getElementById('in-rate');
+            const outRateEl      = document.getElementById('out-rate');
+            const combinedRateEl = document.getElementById('combined-rate');
+
+            inRateEl.textContent       = inTotal  > 0 ? (inWin  / inTotal  * 100).toFixed(1) + '%' : '-';
+            outRateEl.textContent      = outTotal > 0 ? (outWin / outTotal * 100).toFixed(1) + '%' : '-';
+            combinedRateEl.textContent = allTotal > 0 ? ((inWin + outWin) / allTotal * 100).toFixed(1) + '%' : '-';
+        }
+
+        // 카운터 업데이트 함수
+        function updateCounter(id, change) {
+            const element = document.getElementById(id);
+            let currentValue = parseInt(element.textContent);
+            let newValue = currentValue + change;
+
+            if (newValue < 0) newValue = 0;
+
+            element.textContent = newValue;
+            saveCounters();
+            updateWinRates();
+
+            element.style.backgroundColor = change > 0 ? '#4CAF50' : '#ff9800';
+            element.style.color = 'white';
+            setTimeout(() => {
+                element.style.backgroundColor = 'white';
+                element.style.color = '#333';
+            }, 200);
+        }
+
+        // 모든 카운터 값을 localStorage에 저장
+        function saveCounters() {
+            const counters = {
+                'in-win':   document.getElementById('in-win').textContent,
+                'in-lose':  document.getElementById('in-lose').textContent,
+                'out-win':  document.getElementById('out-win').textContent,
+                'out-lose': document.getElementById('out-lose').textContent
+            };
+            localStorage.setItem('winLoseCounters', JSON.stringify(counters));
+        }
+
+        // localStorage에서 카운터 값 불러오기
+        function loadCounters() {
+            const saved = localStorage.getItem('winLoseCounters');
+            if (saved) {
+                const counters = JSON.parse(saved);
+                document.getElementById('in-win').textContent   = counters['in-win']   || '0';
+                document.getElementById('in-lose').textContent  = counters['in-lose']  || '0';
+                document.getElementById('out-win').textContent  = counters['out-win']  || '0';
+                document.getElementById('out-lose').textContent = counters['out-lose'] || '0';
+            }
+            updateWinRates();
+        }
+
+        // 전체 카운터 초기화
+        function resetAllCounters() {
+            if (confirm('모든 카운터를 초기화하시겠습니까?')) {
+                document.getElementById('in-win').textContent   = '0';
+                document.getElementById('in-lose').textContent  = '0';
+                document.getElementById('out-win').textContent  = '0';
+                document.getElementById('out-lose').textContent = '0';
+                saveCounters();
+                updateWinRates();
+
+                const boxes = document.querySelectorAll('.display-box');
+                boxes.forEach(box => {
+                    box.style.backgroundColor = '#f44336';
+                    box.style.color = 'white';
+                    setTimeout(() => {
+                        box.style.backgroundColor = 'white';
+                        box.style.color = '#333';
+                    }, 300);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
